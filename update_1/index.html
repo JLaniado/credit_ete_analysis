@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Screening Peer-Lending Loans — Update 1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FAFAF8;
+    --ink:#1F2430;
+    --ink-soft:#5B6270;
+    --primary:#3866A8;
+    --primary-soft:#DCE6F2;
+    --risk:#B04A44;
+    --risk-soft:#F5E4E2;
+    --neutral:#C9C4BA;
+    --grid:#E4E1DA;
+    --panel:#FFFFFF;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; padding:0; height:100%;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    overflow:hidden;
+  }
+  .deck{
+    position:relative;
+    width:100vw; height:100vh;
+  }
+  .slide{
+    position:absolute; inset:0;
+    display:none;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:6vh 8vw;
+    opacity:0;
+  }
+  .slide.active{
+    display:flex;
+    opacity:1;
+  }
+  .kicker{
+    text-transform:uppercase;
+    letter-spacing:0.14em;
+    font-size:0.78rem;
+    font-weight:600;
+    color:var(--ink-soft);
+    margin-bottom:1.1rem;
+  }
+  h1{
+    font-size:2.6rem;
+    font-weight:800;
+    margin:0 0 0.6rem 0;
+    text-align:center;
+    letter-spacing:-0.01em;
+    line-height:1.15;
+  }
+  .sub{
+    font-size:1.15rem;
+    color:var(--ink-soft);
+    text-align:center;
+    max-width:720px;
+    margin:0 auto 2.2rem auto;
+    font-weight:400;
+  }
+  .body-wrap{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    width:100%;
+    max-width:1180px;
+  }
+  img.chart{
+    max-width:100%;
+    max-height:60vh;
+    object-fit:contain;
+  }
+  .counter{
+    position:fixed;
+    bottom:22px; right:28px;
+    font-size:0.85rem;
+    color:var(--ink-soft);
+    font-variant-numeric:tabular-nums;
+    letter-spacing:0.02em;
+  }
+  .progress{
+    position:fixed;
+    bottom:0; left:0;
+    height:3px;
+    background:var(--primary);
+    transition:width .35s ease;
+    z-index:5;
+  }
+  .brand{
+    position:fixed;
+    top:22px; left:28px;
+    font-size:0.78rem;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    font-weight:600;
+  }
+
+  /* ---- Title slide ---- */
+  .title-goals{
+    display:flex; gap:2.4rem; margin-top:2.6rem;
+  }
+  .goal-chip{
+    display:flex; flex-direction:column; align-items:center; gap:0.4rem;
+  }
+  .goal-chip .tag{
+    width:56px; height:56px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--primary-soft); color:var(--primary);
+    font-weight:800; font-size:1.15rem;
+  }
+  .goal-chip span.label{
+    font-size:0.85rem; color:var(--ink-soft); font-weight:500;
+  }
+
+  /* ---- Levers diagram ---- */
+  .diagram-svg{ width:100%; max-width:980px; height:auto; }
+
+  /* ---- Stat callouts ---- */
+  .stat-row{
+    display:flex; gap:3rem; justify-content:center; margin-top:1.6rem;
+  }
+  .stat{
+    text-align:center;
+  }
+  .stat .num{
+    font-size:2.6rem; font-weight:800; line-height:1;
+  }
+  .stat .num.risk{ color:var(--risk); }
+  .stat .num.primary{ color:var(--primary); }
+  .stat .lbl{
+    margin-top:0.4rem; font-size:0.92rem; color:var(--ink-soft);
+  }
+
+  .callout{
+    margin-top:1.4rem;
+    font-size:1.05rem;
+    color:var(--ink);
+    text-align:center;
+    max-width:760px;
+  }
+  .callout b{ color:var(--risk); }
+  .callout b.good{ color:var(--primary); }
+
+  .footline{
+    margin-top:1.6rem;
+    font-size:0.95rem;
+    color:var(--ink-soft);
+    text-align:center;
+    max-width:820px;
+  }
+
+  /* Bridge slide */
+  .bridge-row{
+    display:flex; align-items:center; gap:1.1rem; margin-top:1.6rem; flex-wrap:wrap;
+    justify-content:center;
+  }
+  .bridge-card{
+    background:var(--panel);
+    border:1px solid var(--grid);
+    border-radius:14px;
+    padding:1.1rem 1.4rem;
+    text-align:center;
+    min-width:190px;
+  }
+  .bridge-card .t{ font-weight:700; font-size:1rem; margin-bottom:0.25rem; }
+  .bridge-card .d{ font-size:0.85rem; color:var(--ink-soft); }
+  .bridge-arrow{ font-size:1.6rem; color:var(--neutral); }
+  .bridge-next{
+    margin-top:1.8rem;
+    font-size:1.25rem; font-weight:700; color:var(--primary);
+    text-align:center;
+  }
+
+  /* nav affordance */
+  .nav-hint{
+    position:fixed; top:22px; right:28px;
+    font-size:0.78rem; color:var(--ink-soft);
+    letter-spacing:0.02em;
+  }
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+
+  <!-- 1: Title -->
+  <section class="slide active">
+    <div class="kicker">Lending Club · ExCo Update 1</div>
+    <h1>Screening Peer-Lending Loans</h1>
+    <div class="sub">Three executives, one shared problem: which loans should we trust — and at what price?</div>
+    <div class="title-goals">
+      <div class="goal-chip"><div class="tag">CEO</div><span class="label">ROIC</span></div>
+      <div class="goal-chip"><div class="tag">CFO</div><span class="label">Interest profit</span></div>
+      <div class="goal-chip"><div class="tag">CMO</div><span class="label">Market share</span></div>
+    </div>
+  </section>
+
+  <!-- 2: Levers diagram -->
+  <section class="slide">
+    <div class="kicker">The business</div>
+    <h1>Three goals, two levers</h1>
+    <svg class="diagram-svg" viewBox="0 0 900 340" xmlns="http://www.w3.org/2000/svg">
+      <!-- goal boxes -->
+      <g font-family="Inter, sans-serif">
+        <rect x="30" y="30" width="190" height="70" rx="14" fill="#FFFFFF" stroke="#E4E1DA" stroke-width="1.5"/>
+        <text x="125" y="60" text-anchor="middle" font-size="16" font-weight="700" fill="#1F2430">CEO</text>
+        <text x="125" y="82" text-anchor="middle" font-size="13" fill="#5B6270">Return on invested capital</text>
+
+        <rect x="30" y="135" width="190" height="70" rx="14" fill="#FFFFFF" stroke="#E4E1DA" stroke-width="1.5"/>
+        <text x="125" y="165" text-anchor="middle" font-size="16" font-weight="700" fill="#1F2430">CFO</text>
+        <text x="125" y="187" text-anchor="middle" font-size="13" fill="#5B6270">Interest profit</text>
+
+        <rect x="30" y="240" width="190" height="70" rx="14" fill="#FFFFFF" stroke="#E4E1DA" stroke-width="1.5"/>
+        <text x="125" y="270" text-anchor="middle" font-size="16" font-weight="700" fill="#1F2430">CMO</text>
+        <text x="125" y="292" text-anchor="middle" font-size="13" fill="#5B6270">Market share</text>
+
+        <!-- connecting lines to lever boxes -->
+        <path d="M220,65 C 400,65 400,110 480,130" stroke="#C9C4BA" stroke-width="1.8" fill="none"/>
+        <path d="M220,170 C 380,170 380,150 480,150" stroke="#C9C4BA" stroke-width="1.8" fill="none"/>
+        <path d="M220,275 C 400,275 400,190 480,170" stroke="#C9C4BA" stroke-width="1.8" fill="none"/>
+
+        <!-- lever boxes -->
+        <rect x="490" y="90" width="230" height="90" rx="16" fill="#3866A8"/>
+        <text x="605" y="128" text-anchor="middle" font-size="17" font-weight="800" fill="#FFFFFF">Who we approve</text>
+        <text x="605" y="152" text-anchor="middle" font-size="12.5" fill="#DCE6F2">Credit policy</text>
+
+        <rect x="490" y="200" width="230" height="90" rx="16" fill="#B04A44"/>
+        <text x="605" y="238" text-anchor="middle" font-size="17" font-weight="800" fill="#FFFFFF">How we price</text>
+        <text x="605" y="262" text-anchor="middle" font-size="12.5" fill="#F5E4E2">Interest rate by risk</text>
+
+        <!-- outcome arrow -->
+        <path d="M720,135 C 800,150 800,230 720,245" stroke="#C9C4BA" stroke-width="1.8" fill="none" marker-end="url(#arrow)"/>
+        <text x="845" y="195" text-anchor="middle" font-size="13" fill="#5B6270" transform="rotate(90 845 195)">Every ExCo goal</text>
+      </g>
+      <defs>
+        <marker id="arrow" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#C9C4BA"/>
+        </marker>
+      </defs>
+    </svg>
+    <div class="footline">Update 1 asks: are these two levers currently calibrated correctly?</div>
+  </section>
+
+  <!-- 3: Data in one line -->
+  <section class="slide">
+    <div class="kicker">The data</div>
+    <h1>One row, one funded loan</h1>
+    <div class="sub">9,578 loans · 16.0% defaulted · no missing data · funded 2007–2010</div>
+    <svg class="diagram-svg" viewBox="0 0 900 220" xmlns="http://www.w3.org/2000/svg" style="max-width:820px;">
+      <g font-family="Inter, sans-serif">
+        <rect x="40" y="30" width="380" height="130" rx="16" fill="#DCE6F2"/>
+        <text x="230" y="70" text-anchor="middle" font-size="16" font-weight="700" fill="#1F2430">Known at application</text>
+        <text x="230" y="96" text-anchor="middle" font-size="34" font-weight="800" fill="#3866A8">13</text>
+        <text x="230" y="122" text-anchor="middle" font-size="12.5" fill="#5B6270">credit policy, purpose, FICO,</text>
+        <text x="230" y="140" text-anchor="middle" font-size="12.5" fill="#5B6270">income, dti, inquiries…</text>
+
+        <rect x="480" y="30" width="380" height="130" rx="16" fill="#F5E4E2"/>
+        <text x="670" y="70" text-anchor="middle" font-size="16" font-weight="700" fill="#1F2430">Known only after</text>
+        <text x="670" y="96" text-anchor="middle" font-size="34" font-weight="800" fill="#B04A44">3</text>
+        <text x="670" y="122" text-anchor="middle" font-size="12.5" fill="#5B6270">total payment, principal,</text>
+        <text x="670" y="140" text-anchor="middle" font-size="12.5" fill="#5B6270">interest — excluded from modeling</text>
+      </g>
+    </svg>
+    <div class="footline">Any predictive model we build next must use only the left-hand fields.</div>
+  </section>
+
+  <!-- 4: Policy gap -->
+  <section class="slide">
+    <div class="kicker">Lever 1 — Policy</div>
+    <h1>Are we rejecting the right people?</h1>
+    <div class="body-wrap">
+      <img class="chart" src="assets/policy_confusion.png" alt="Policy vs default confusion grid" />
+      <div class="callout">Rejected loans (<b>credit.policy = 0</b>) still default at <b>2.1×</b> the rate of approved loans — but <b class="good">72%</b> of them would have paid in full. That's <b>14.1% of the entire applicant base</b> — good borrowers turned away by a blunt rule.</div>
+    </div>
+  </section>
+
+  <!-- 5: Pricing gap -->
+  <section class="slide">
+    <div class="kicker">Lever 2 — Pricing</div>
+    <h1>Are riskier segments priced up?</h1>
+    <div class="body-wrap">
+      <img class="chart" src="assets/fico_inq_heatmap.png" alt="Default rate by FICO and recent inquiries" />
+      <div class="callout">Even top-tier borrowers (FICO 742+) go from <b class="good">5.6%</b> to <b>16.3%</b> default with 3+ recent credit inquiries — a risk signal that pricing (set mostly from FICO) doesn't fully capture.</div>
+    </div>
+  </section>
+
+  <!-- 6: Segments -->
+  <section class="slide">
+    <div class="kicker">Validating the segments</div>
+    <h1>Two methods, the same borrower map</h1>
+    <div class="body-wrap">
+      <img class="chart" src="assets/kmeans_parallel.png" alt="K-means cluster profiles" />
+      <div class="callout">K-means and PCA independently converge on the same borrower archetypes — including a small, high-income <b>"jumbo revolver"</b> segment (2% of loans) that defaults <b>most</b> of all, yet isn't priced accordingly.</div>
+    </div>
+  </section>
+
+  <!-- 7: Bridge -->
+  <section class="slide">
+    <div class="kicker">So what</div>
+    <h1>Two gaps, one next step</h1>
+    <div class="bridge-row">
+      <div class="bridge-card"><div class="t">Policy gap</div><div class="d">14.1% of applicants wrongly rejected</div></div>
+      <div class="bridge-arrow">+</div>
+      <div class="bridge-card"><div class="t">Pricing gap</div><div class="d">Inquiry risk under-priced</div></div>
+      <div class="bridge-arrow">+</div>
+      <div class="bridge-card"><div class="t">Validated segments</div><div class="d">4 archetypes, 2 methods agree</div></div>
+    </div>
+    <div class="bridge-next">→ Update 2: a predictive model and a data-driven threshold</div>
+  </section>
+
+  <!-- 8: Close -->
+  <section class="slide">
+    <div class="kicker">Update 1</div>
+    <h1>Questions</h1>
+    <div class="sub">Screening Peer-Lending Loans — Diagnostic &amp; Descriptive Models</div>
+  </section>
+
+</div>
+
+<div class="brand">Update 1</div>
+<div class="counter" id="counter">1 / 8</div>
+<div class="nav-hint">← → to navigate</div>
+<div class="progress" id="progress" style="width:12.5%"></div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let idx = 0;
+  const counter = document.getElementById('counter');
+  const progress = document.getElementById('progress');
+
+  function render(){
+    slides.forEach((s,i)=> s.classList.toggle('active', i===idx));
+    counter.textContent = (idx+1) + ' / ' + total;
+    progress.style.width = ((idx+1)/total*100) + '%';
+  }
+  function go(delta){
+    idx = Math.min(total-1, Math.max(0, idx+delta));
+    render();
+  }
+  document.addEventListener('keydown', (e)=>{
+    if(e.key==='ArrowRight' || e.key===' ' || e.key==='PageDown'){ go(1); e.preventDefault(); }
+    if(e.key==='ArrowLeft' || e.key==='PageUp'){ go(-1); e.preventDefault(); }
+    if(e.key==='Home'){ idx=0; render(); }
+    if(e.key==='End'){ idx=total-1; render(); }
+  });
+  document.getElementById('deck').addEventListener('click', (e)=>{
+    const w = window.innerWidth;
+    if(e.clientX > w/2) go(1); else go(-1);
+  });
+  render();
+</script>
+</body>
+</html>

@@ -22,7 +22,11 @@ Update 2/3 (a predictive model + threshold/pricing optimization) as the obvious 
   small_business ≈ 27.8% (highest)
 - fico and int.rate are strongly negatively correlated (r = −0.71) — LendingClub's own
   pricing already leans on fico, which is why the heatmap needs a *second*, less-priced
-  axis (dti) to show a real gap, not just restate int.rate ≈ f(fico)
+  axis to show a real gap, not just restate int.rate ≈ f(fico). Tested dti, revol.util,
+  log.annual.inc, and inq.last.6mths as the second axis; **inq.last.6mths** (recent credit
+  inquiries) gave the cleanest, most monotonic gradient on both axes: even top-FICO
+  borrowers (742–827) go from **5.6% → 16.3%** default just by having 3+ recent inquiries
+  vs. none — a risk signal pricing largely misses
 - K-means (k=4, 8 standardized application-time variables, int.rate excluded): 4 named
   segments, most notably a small (~2%) "high-income jumbo revolver" segment with the
   *highest* default rate (28.2%) — a pricing gap example
@@ -50,10 +54,11 @@ still 72% good loans → **14% of all applicants** are false negatives under the
 rule. The rule is blunt, not targeted.
 
 **5. Lever 2 — Pricing: are riskier segments priced up? (90s)**
-2D binned default-rate heatmap: fico × dti (int.rate deliberately not used as an axis —
-it's already a near-mirror of fico, r=−0.71, so it would just repeat the fico story).
-Default rate climbs in the high-dti / low-fico corner; tie to the K-means jumbo-revolver
-segment as a concrete instance where pricing doesn't track risk.
+2D binned default-rate heatmap: fico × recent credit inquiries (int.rate deliberately not
+used as an axis — it's already a near-mirror of fico, r=−0.71, so it would just repeat the
+fico story). Default rate climbs sharply with inquiry count *within every fico band*
+(5.6% → 16.3% for top-tier borrowers alone); tie to the K-means jumbo-revolver segment as
+a concrete instance where pricing doesn't track risk.
 
 **6. Segments exist, and two methods agree (90s)**
 Cleaned K-means parallel-coordinates + one-line PCA callout (safety axis, scale axis).
@@ -76,7 +81,7 @@ the deck's own CSS):
 |---|---|---|
 | Background | warm near-white | `#FAFAF8` |
 | Ink / text | charcoal (never pure black) | `#1F2430` |
-| Primary / "good" (non-default) | muted slate blue | `#4C6FA5` |
+| Primary / "good" (non-default) | muted slate blue | `#3866A8` |
 | Risk / "bad" (default) — reserved exclusively for default signal | muted brick red | `#B04A44` |
 | Neutral / de-emphasized | warm gray | `#C9C4BA` |
 | Gridlines / hairlines | pale gray | `#E4E1DA` |
@@ -96,7 +101,7 @@ the deck's own CSS):
 **Charts to (re)build**
 1. Policy vs. default confusion-matrix / 100%-stacked view — rebuilt from the logic in
    `categorical_normalized_by_default.png`, restyled
-2. New fico × dti binned default-rate heatmap — does not exist in the repo, built fresh
+2. New fico × recent-inquiries binned default-rate heatmap — does not exist in the repo, built fresh
 3. Cleaned K-means parallel-coordinates — rebuilt from `kmeans_parallel_coordinates.png` logic
 4. Two small conceptual diagrams (slide 2 goals→levers, slide 3 data split) — hand-built
    shapes, not data charts
