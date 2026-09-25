@@ -2,7 +2,7 @@
 
 Rebuilds (not screenshots of) the notebook's policy/default view plus a new
 fico x dti default-rate heatmap and a restyled K-means parallel-coordinates
-chart, all using the palette in update_1/outline.md.
+chart, all using the palette in U1/outline.md.
 """
 import matplotlib
 matplotlib.use("Agg")
@@ -83,7 +83,7 @@ for i, policy in enumerate(row_order):
 ax.set_ylim(-0.28, 2.2)
 ax.set_xlim(-0.85, 2.05)
 plt.tight_layout()
-plt.savefig("update_1/assets/policy_confusion.png", dpi=200, bbox_inches="tight")
+plt.savefig("U1/assets/policy_confusion.png", dpi=200, bbox_inches="tight")
 plt.close()
 
 # ---------------------------------------------------------------------------
@@ -134,7 +134,7 @@ cbar.outline.set_visible(False)
 cbar.set_label("Default rate", fontsize=10.5)
 
 plt.tight_layout()
-plt.savefig("update_1/assets/fico_inq_heatmap.png", dpi=200, bbox_inches="tight")
+plt.savefig("U1/assets/fico_inq_heatmap.png", dpi=200, bbox_inches="tight")
 plt.close()
 
 print(f"Best cell (top fico, 0 inquiries): {vals[0, 0]:.1f}%")
@@ -209,9 +209,9 @@ ax.spines["bottom"].set_color(GRID)
 ax.tick_params(length=0)
 ax.grid(axis="y", color=GRID, linewidth=0.8, alpha=0.6)
 plt.tight_layout()
-plt.savefig("update_1/assets/kmeans_parallel.png", dpi=200, bbox_inches="tight")
+plt.savefig("U1/assets/kmeans_parallel.png", dpi=200, bbox_inches="tight")
 plt.close()
 
 print("Cluster sizes (%):", sizes.to_dict())
 print("Cluster default rates (%):", default_rates.round(1).to_dict())
-print("Saved charts to update_1/assets/")
+print("Saved charts to U1/assets/")
